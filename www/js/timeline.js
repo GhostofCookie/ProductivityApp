@@ -21,12 +21,12 @@ class Timeline {
         var last_break = 0;
         for(var i = 1; i < diff/100; i++)
         {
-            last_break += (this.TimeToInt(end) / (diff/100));
+            last_break += parseInt((this.TimeToInt(end) / (diff/100))/100) * 100;
             if(last_break > this.TimeToInt(start) && last_break < this.TimeToInt(end))
             {
                 this.timeline+= this.AddTime(last_break);
-                this.timeline+= this.AddTime(last_break + 15, "Take a break");
-                this.timeline+= this.AddTime(last_break + 35, "Back to work");
+                this.timeline+= this.AddTime(parseInt(last_break + 15), "Take a break");
+                this.timeline+= this.AddTime(parseInt(last_break + 35), "Back to work");
             }
         }
         this.timeline += this.AddTime(this.TimeToInt(end), 'End Work');
@@ -47,7 +47,7 @@ class Timeline {
 
     AddTime(time, task=null, date=null) {
         var hours = parseInt(time/100);
-        var min = parseInt(time/100 - hours);
+        var min = parseInt((time/100 - hours) * 100);
         var formatTime = String((hours < 10) ? hours = "0" + hours : hours) + ':' + String((min < 10) ? min = "0" + min : min);
         return `<div class="timeline-item timeline-item-right">
             <div class="timeline-item-date">` + (date !== null ? date : ``) + `</div>
