@@ -10,7 +10,7 @@ function FormatTimelineDate(day, month) {
 class Timeline {
     constructor(start, end) {
         var today = new Date();
-        this.timeline = '<div class="timeline timeline-sides">'
+        this.timeline = '<div class="timeline">'
 
         var date = FormatTimelineDate(today.getDay(), today.getMonth());
 
@@ -21,12 +21,17 @@ class Timeline {
         var last_break = 0;
         for(var i = 1; i < diff/100; i++)
         {
-            last_break += (this.TimeToInt(end) / (diff/100));
-            if(last_break > this.TimeToInt(start) && last_break < this.TimeToInt(end))
+            last_break += parseInt((this.TimeToInt(end) / (diff/100))/100) * 100;
+            if (last_break > this.TimeToInt(start) && last_break < this.TimeToInt(end) &&
+                last_break != 1200)
             {
                 this.timeline+= this.AddTime(last_break);
-                this.timeline+= this.AddTime(last_break + 15, "Take a break");
-                this.timeline+= this.AddTime(last_break + 35, "Back to work");
+                this.timeline+= this.AddTime(parseInt(last_break + 15), "Take a break", null, 'Rest your eyes, wake a walk.');
+                this.timeline+= this.AddTime(parseInt(last_break + 36), "Back to work");
+            }
+            else if (last_break >= 1200 && last_break <= 1300) {
+                this.timeline += this.AddTime(1200, 'Lunch');
+                this.timeline += this.AddTime(1300, 'Return from Lunch');
             }
         }
         this.timeline += this.AddTime(this.TimeToInt(end), 'End Work');
@@ -45,19 +50,20 @@ class Timeline {
     CalculateBreaks(start, end) {
     }
 
-    AddTime(time, task=null, date=null) {
+    AddTime(time, task=null, date=null, subtitle=null) {
         var hours = parseInt(time/100);
-        var min = parseInt(time/100 - hours);
+        var min = parseInt((time/100 - hours) * 100);
         var formatTime = String((hours < 10) ? hours = "0" + hours : hours) + ':' + String((min < 10) ? min = "0" + min : min);
         return `<div class="timeline-item timeline-item-right">
             <div class="timeline-item-date">` + (date !== null ? date : ``) + `</div>
             <div class="timeline-item-divider"></div>
-            <div class="timeline-item-content">` + (task === null ? 
+            <div class="timeline-item-content color-theme-green">` + (task === null ? 
             `<div class="timeline-item-time">` + formatTime + `</div>` :
             `<div class="timeline-item-inner">
                 <div class="timeline-item-time">` + formatTime + `</div>
-                <div class="timeline-item-title">` + task + `</div>
-            </div>`) + `</div></div>`;
+                <div class="timeline-item-title">` + task + `</div>` +
+                (subtitle !== null ? `<div class="timeline-item-text">` + subtitle + `</div>` : ``) +
+            `</div>`) + `</div></div>`;
     }
 
     CheckIfBreakTimer() {
