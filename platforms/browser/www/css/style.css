@@ -1,0 +1,18 @@
+.page[data-name="home"] > .page-content > form[name="time"] {
+    display: grid !important;
+    grid-template-areas: 
+        '. . .'
+        'time time time'
+        '. submit .'
+        '. . .'
+        ;
+    height: 100%;
+}
+
+form[name="time"] > .list{
+    grid-area: time;
+}
+
+form[name="time"] > #submit{
+    grid-area: submit;
+}
