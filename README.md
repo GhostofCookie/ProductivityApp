@@ -1,14 +1,2 @@
-# A Blank PhoneGap App
-
-## Usage
-
-### PhoneGap CLI
-
-    $ phonegap create my-app --template blank
-
-### Desktop
-
-In your browser, open the file:
-
-    /www/index.html
-
+# Theme: Clarity
+An app for a mobile app development class, where the theme given to me was "Clarity". Thus, this app is designed around the idea of bringing clarity to a work day, informing you of when you need to take breaks in your work day.
