@@ -155,6 +155,7 @@ class Timeline {
         let last_break = 0;
         let food_break = Math.trunc((this.end + this.start) / 2);
         let breaks = [];
+        this.breaks = [];
         for (var i = 1; i < diff / 100; i++) {
             last_break += Math.round((Math.max(this.end, this.start) / frac) / 100) * 100;
             if (last_break > this.start && last_break + 15 < this.end &&
@@ -167,6 +168,9 @@ class Timeline {
                     new TimelineTextItem('end-break',
                         (Math.floor(last_break / 100) * 100) + 15,
                         "Back to work"));
+                
+                this.breaks.push(last_break);
+                this.breaks.push((Math.floor(last_break / 100) * 100) + 15);
             }
         }
 
@@ -178,6 +182,8 @@ class Timeline {
             breaks.splice(Math.floor(breaks.length / 2) + 1, 0,
                 new TimelineTextItem('end-break', food_break + 100,
                     'Return from eating'));
+            this.breaks.splice(Math.floor(breaks.length / 2), 0, food_break);
+            this.breaks.splice(Math.floor(breaks.length / 2) + 1, 0, food_break + 100);
         }
 
         let self = this;
@@ -191,7 +197,12 @@ class Timeline {
      * @returns True if it is a break, false otherwise.
      */
     CheckIfBreak() {
-        // TODO(t.rigaux): Add logic here for creating alert.
+        let today = new Date();
+        let curr_time = today.getHours() * 100 + today.getMinutes();
+        this.breaks.forEach(function(item) {
+            if (item - curr_time == 0)
+                return true;
+        });
         return false;
     }
 };
@@ -209,7 +220,9 @@ $(document).on('page:afterin', '.page[data-name="timeline"]', function (e) {
         /** Start/Restart the timer */
         if (timer !== null || timer !== undefined) clearInterval(timer);
         setInterval(() => {
-            timeline.CheckIfBreak();
+            if (timeline.CheckIfBreak())
+                alert("Take a break!");
+
             $('.title').html(String(timeline.GetRemainingHours()) + " hours remaining");
         }, 10000);
     }

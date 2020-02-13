@@ -1,2 +1,3 @@
-Language: js
-BasedOnStyle: llvm
+Language: JavaScript
+BasedOnStyle: Google
+BreakBeforeBraces: Allman

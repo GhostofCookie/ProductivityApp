@@ -29,14 +29,14 @@ let mainView = app.views.create('.view-main');
 /** Serializes the form time inputs into JSON data and redirects the page. */
 function SubmitForm() {
     // Check that inputs are filled and valid.
-    $('input[type="time"]').on('change', function(e) {
+    $('input[type="time"]').on('change', function (e) {
         var empty = false;
         // BUG(t.rigaux): This doesn't actually get all input elements.
         // this problem is currently handled by null value checking.
-        $('input[type="time"]').each(function() {
+        $('input[type="time"]').each(function () {
             if ($(this).val() == '') empty = true;
         });
-        
+
         if (empty)
             $('#submit').attr('href', '');
         else
@@ -44,7 +44,7 @@ function SubmitForm() {
     });
 
     // Submit form.
-    $('#submit').on('click', function(e) {
+    $('#submit').on('click', function (e) {
         e.preventDefault();
         var data = app.form.convertToData('form[name="time"]');
         start = data["start"]; end = data["end"];
