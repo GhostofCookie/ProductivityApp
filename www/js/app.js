@@ -52,8 +52,12 @@ function SubmitForm() {
 }
 
 /** This is the document ready method in shorthand. */
-$(SubmitForm());
+$(function() {
+    SubmitForm()
+});
 
 /** Allows us to use ajax in an asynchrounously loaded page. */
-$(document).on('page:beforein', '.page[data-name="home"]', SubmitForm());
+$(document).on('page:beforein', '.page[data-name="home"]', function(e) {
+    SubmitForm()
+});
 

@@ -208,6 +208,8 @@ class Timeline {
 };
 
 
+var start, end;
+var timer;
 
 /** Initialize the timeline on page entry */
 $(document).on('page:afterin', '.page[data-name="timeline"]', function (e) {
