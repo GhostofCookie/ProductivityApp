@@ -9,7 +9,7 @@ function FormatTimelineDate(day, month) {
 function FormatTime(time) {
     var hours = Math.trunc(time/100);
     var min = Math.round((time/100 - hours) * 100);
-    return String((hours % 13) + (hours < 13 ? 0 : 1) )+ ':' + String((min < 10) ? "0" + String(min) : min) + ' ' + (hours < 12 ? 'am' : 'pm');
+    return String(hours === 0 ? 12 : (hours % 13) + (hours < 13 ? 0 : 1))+ ':' + String((min < 10) ? "0" + String(min) : min) + ' ' + (hours < 12 ? 'am' : 'pm');
 }
 
 
@@ -63,14 +63,13 @@ class TimelineTextItem {
 class Timeline {
     constructor(start, end) {
         var today       = new Date();
-
         var date = FormatTimelineDate(today.getDay(), today.getMonth());
 
         this.start = TimeToInt(start);
         this.end   = TimeToInt(end);
 
         let startItem   = new TimelineTimeItem('start', this.start, date);
-        let endItem     = new TimelineTimeItem('end', this.end, '<i class="f7-icons">zzz</i>');
+        let endItem     = new TimelineTimeItem('end', this.end, (end < start ? FormatTimelineDate(today.getDay()+1, today.getMonth()) : '<i class="f7-icons">zzz</i>'));
 
         this.timeline  = '<div class="timeline timeline-sides">';
         this.timeline += startItem.get();
@@ -90,8 +89,8 @@ class Timeline {
         var lunch = parseInt((end + start) / 2);
         for(var i = 1; i < diff/100; i++)
         {
-            last_break += Math.trunc((end / frac)/100) * 100;
-            if (last_break > start && last_break + 36 < end && 
+            last_break += Math.round((Math.max(end, start) / frac)/100) * 100;
+            if (last_break > start && last_break + 15 < end && 
                (last_break < lunch || last_break > lunch + 100))
             {
                 this.timeline+= this.AddTime('break', last_break, "Take a break", 'Rest your eyes, take a walk.');
@@ -117,12 +116,16 @@ class Timeline {
 var start, end;
 var timer;
 $(document).on('page:afterin', '.page[data-name="timeline"]', function(e){
-    let timeline = new Timeline(start, end);
-    setInterval(() => {
-        timeline.CheckIfBreakTimer();
-        var today = new Date();
-        $('.title').html(String(Math.trunc((timeline.end - (today.getHours() * 100))/100)) + " hours remaining");
-    }, 1000);
+    if(start !== null && end !== null && start !== undefined && end !== undefined && start !== '' && end !== '')
+    {
+        let timeline = new Timeline(start, end);
+        if(timer !== null) clearInterval(timer);
+        setInterval(() => {
+            timeline.CheckIfBreakTimer();
+            var today = new Date();
+            $('.title').html(String(Math.abs(Math.round((timeline.end - (today.getHours() * 100))/100)) + " hours remaining"));
+        }, 10000);
+    }
 });
 $(document).on('page:beforeout', '.page[data-name="timeline"]', function(e){
     clearInterval(timer);
