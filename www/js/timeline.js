@@ -6,75 +6,124 @@ function FormatTimelineDate(day, month) {
     return String(day) + ' <small>' + months[month].toUpperCase() + '</small>';
 }
 
-
-class Timeline {
-    constructor(start, end) {
-        var today = new Date();
-        this.timeline = '<div class="timeline">'
-
-        var date = FormatTimelineDate(today.getDay(), today.getMonth());
-
-        var diff = this.TimeToInt(end) - this.TimeToInt(start);
+function FormatTime(time) {
+    var hours = Math.trunc(time/100);
+    var min = Math.round((time/100 - hours) * 100);
+    return String((hours % 13) + (hours < 13 ? 0 : 1) )+ ':' + String((min < 10) ? "0" + String(min) : min) + ' ' + (hours < 12 ? 'am' : 'pm');
+}
 
 
-        this.timeline += this.AddTime(this.TimeToInt(start), 'Start Work', date);
-        var last_break = 0;
-        for(var i = 1; i < diff/100; i++)
-        {
-            last_break += parseInt((this.TimeToInt(end) / (diff/100))/100) * 100;
-            if (last_break > this.TimeToInt(start) && last_break < this.TimeToInt(end) &&
-                last_break != 1200)
-            {
-                this.timeline+= this.AddTime(last_break);
-                this.timeline+= this.AddTime(parseInt(last_break + 15), "Take a break", null, 'Rest your eyes, wake a walk.');
-                this.timeline+= this.AddTime(parseInt(last_break + 36), "Back to work");
-            }
-            else if (last_break >= 1200 && last_break <= 1300) {
-                this.timeline += this.AddTime(1200, 'Lunch');
-                this.timeline += this.AddTime(1300, 'Return from Lunch');
-            }
-        }
-        this.timeline += this.AddTime(this.TimeToInt(end), 'End Work');
+function TimeToInt(time) {
+    var hoursMinutes = time.split(/[.:]/);
+    var hours = parseInt(hoursMinutes[0], 10) * 100;
+    var minutes = hoursMinutes[1] ? parseInt(hoursMinutes[1], 10) : 0;
+    return hours + minutes;
+}
 
-        this.timeline += '</div>';
-        $('#timeline').html(this.timeline);
+class TimelineTimeItem {
+    constructor(c, time, date=null) {
+        this.class = c;
+        this.time = FormatTime(time);
+        this.date = date;
     }
 
-    TimeToInt(time) {
-        var hoursMinutes = time.split(/[.:]/);
-        var hours = parseInt(hoursMinutes[0], 10) * 100;
-        var minutes = hoursMinutes[1] ? parseInt(hoursMinutes[1], 10) : 0;
-        return hours + minutes;
-    }
-
-    CalculateBreaks(start, end) {
-    }
-
-    AddTime(time, task=null, date=null, subtitle=null) {
-        var hours = parseInt(time/100);
-        var min = parseInt((time/100 - hours) * 100);
-        var formatTime = String((hours < 10) ? hours = "0" + hours : hours) + ':' + String((min < 10) ? min = "0" + min : min);
-        return `<div class="timeline-item timeline-item-right">
-            <div class="timeline-item-date">` + (date !== null ? date : ``) + `</div>
-            <div class="timeline-item-divider"></div>
-            <div class="timeline-item-content color-theme-green">` + (task === null ? 
-            `<div class="timeline-item-time">` + formatTime + `</div>` :
-            `<div class="timeline-item-inner">
-                <div class="timeline-item-time">` + formatTime + `</div>
-                <div class="timeline-item-title">` + task + `</div>` +
-                (subtitle !== null ? `<div class="timeline-item-text">` + subtitle + `</div>` : ``) +
-            `</div>`) + `</div></div>`;
-    }
-
-    CheckIfBreakTimer() {
-        var today = Date.now();
-        alert(today.getTime());
+    get() {
+        return `<div class="timeline-item ` + (this.class === 'end' ? 'timeline-item-right' : ``) + `">
+            <div class="timeline-item-date">` + (this.date !== null ? this.date : ``) + `</div>
+                <div class="timeline-item-divider"></div>
+                <div class="timeline-item-content">
+                    <div class="timeline-item-time ` + this.class + `">` + this.time + `</div>
+                </div>
+            </div>`;
     }
 };
 
+class TimelineTextItem {
+    constructor(c, time, title, text=null) {
+        this.class = c;
+        this.time = FormatTime(time);
+        this.title = title;
+        this.text = text;
+    }
+
+    get() {
+        return `<div class="timeline-item">
+            <div class="timeline-item-date"></div>
+            <div class="timeline-item-divider"></div>
+            <div class="timeline-item-content">
+            <div class="timeline-item-inner">
+                <div class="timeline-item-time ` + this.class + `">` + this.time + `</div>
+                <div class="timeline-item-title"><strong>` + this.title + `</strong></div>` +
+                (this.text !== null ?
+                `<div class="timeline-item-text">` + this.text + `</div>` : ``) +
+            `</div></div></div>`;
+    }
+};
+
+class Timeline {
+    constructor(start, end) {
+        var today       = new Date();
+
+        var date = FormatTimelineDate(today.getDay(), today.getMonth());
+
+        this.start = TimeToInt(start);
+        this.end   = TimeToInt(end);
+
+        let startItem   = new TimelineTimeItem('start', this.start, date);
+        let endItem     = new TimelineTimeItem('end', this.end, '<i class="f7-icons">zzz</i>');
+
+        this.timeline  = '<div class="timeline timeline-sides">';
+        this.timeline += startItem.get();
+        this.CalculateBreaks();
+        this.timeline += endItem.get();
+        this.timeline += '</div>';
+
+        $('#timeline').html(this.timeline);
+    }
+
+    CalculateBreaks() {
+        var start = this.start;
+        var end = this.end;
+        var diff = Math.abs(end - start);
+        var frac = diff / 150;
+        var last_break = 0;
+        var lunch = parseInt((end + start) / 2);
+        for(var i = 1; i < diff/100; i++)
+        {
+            last_break += Math.trunc((end / frac)/100) * 100;
+            if (last_break > start && last_break + 36 < end && 
+               (last_break < lunch || last_break > lunch + 100))
+            {
+                this.timeline+= this.AddTime('break', last_break, "Take a break", 'Rest your eyes, take a walk.');
+                this.timeline+= this.AddTime('end-break', (Math.floor(last_break/100) * 100) + 15, "Back to work");
+            }
+            else if (last_break >= lunch && last_break <= lunch + 100)
+            {
+                this.timeline += this.AddTime('break', lunch, 'Lunch time');
+                this.timeline += this.AddTime('end-break', lunch + 100, 'Return from Lunch');
+            }
+        }
+        
+    }
+
+    AddTime(c, time, title, text=null) {
+        return new TimelineTextItem(c, time, title, text).get();
+    }
+
+    CheckIfBreakTimer() {
+    }
+};
 
 var start, end;
+var timer;
 $(document).on('page:afterin', '.page[data-name="timeline"]', function(e){
     let timeline = new Timeline(start, end);
-    let timer = setInterval(() => timeline.CheckIfBreakTimer(), 10000);
+    setInterval(() => {
+        timeline.CheckIfBreakTimer();
+        var today = new Date();
+        $('.title').html(String(Math.trunc((timeline.end - (today.getHours() * 100))/100)) + " hours remaining");
+    }, 1000);
+});
+$(document).on('page:beforeout', '.page[data-name="timeline"]', function(e){
+    clearInterval(timer);
 });

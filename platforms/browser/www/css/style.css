@@ -18,6 +18,11 @@ form[name="time"] > .list{
 
 form[name="time"] > #submit{
     grid-area: submit;
+    height: 150px;
+    width: 150px;
+    justify-self: center;
+    border-radius: 50%;
+    padding-top: 45px;
 }
 
 #timeline > .warning {
@@ -32,4 +37,24 @@ form[name="time"] > #submit{
     height: 2rem;
     width: 70%;
     font-size: 1rem;
+}
+
+.timeline-item-time, .timeline-item-date {
+    font-size: 1.25rem !important;
+}
+
+.timeline-item-time.break {
+    color: #2196f3;
+}
+
+.timeline-item-time.end-break {
+    color: #ff9500;
+}
+
+.timeline-item-time.start {
+    color: #4cd964;
+}
+
+.timeline-item-time.end {
+    color: #ff3b30;
 }
