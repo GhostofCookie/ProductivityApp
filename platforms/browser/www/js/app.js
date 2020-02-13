@@ -1,3 +1,12 @@
+/**
+ * @file app.js
+ * @author Tomas rigaux
+ * @brief The framework 7 app logic.
+ * 
+ * Here is where the App is defined in terms of Framework 7. All core methods
+ * are created and/or utilized here.
+ */
+
 let app = new Framework7({
     root: '#app',
     name: 'Framework7',
@@ -17,13 +26,15 @@ let app = new Framework7({
 let mainView = app.views.create('.view-main');
 
 
+/** Serializes the form time inputs into JSON data and redirects the page. */
 function SubmitForm() {
+    // Check that inputs are filled and valid.
     $('input[type="time"]').on('change', function(e) {
         var empty = false;
-        $('form[name="time"] > div > div > div > input[type="time"]').each(function() {
-            if ($(this).val() == '') {
-                empty = true;
-            }
+        // BUG(t.rigaux): This doesn't actually get all input elements.
+        // this problem is currently handled by null value checking.
+        $('input[type="time"]').each(function() {
+            if ($(this).val() == '') empty = true;
         });
         
         if (empty)
@@ -31,6 +42,8 @@ function SubmitForm() {
         else
             $('#submit').attr('href', '/timeline/');
     });
+
+    // Submit form.
     $('#submit').on('click', function(e) {
         e.preventDefault();
         var data = app.form.convertToData('form[name="time"]');
@@ -38,11 +51,9 @@ function SubmitForm() {
     });
 }
 
-$(function() {
-    SubmitForm();
-});
+/** This is the document ready method in shorthand. */
+$(SubmitForm());
 
-$(document).on('page:beforein', '.page[data-name="home"]', function(e) {
-    SubmitForm();
-});
+/** Allows us to use ajax in an asynchrounously loaded page. */
+$(document).on('page:beforein', '.page[data-name="home"]', SubmitForm());
 
